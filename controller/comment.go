@@ -6,24 +6,27 @@ import (
 	"strconv"
 	"time"
 
+	"douyin/dao"
+	"douyin/service"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 type CommentListResponse struct {
 	Response
-	CommentList []Comment `json:"comment_list,omitempty"`
+	CommentList []service.Comment `json:"comment_list,omitempty"`
 }
 
 type CommentActionResponse struct {
 	Response
-	Comment Comment `json:"comment,omitempty"`
+	Comment service.Comment `json:"comment,omitempty"`
 }
 
 // CommentAction no practical effect, just check if token is valid
 func CommentAction(c *gin.Context) {
 	token := c.Query("token")
-	var user User
+	var user service.User
 	verifyErr := VerifyToken(token, &user)
 	if verifyErr != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -34,16 +37,15 @@ func CommentAction(c *gin.Context) {
 	actionType := c.Query("action_type")
 	videoId, _ := strconv.ParseInt(c.Query("video_id"), 10, 64)
 
+	commentService := new(service.CommentsServiceImpl)
+
 	if actionType == "1" {
 		text := c.Query("comment_text")
 		currentTime := fmt.Sprintf("%d-%d", time.Now().Month(), time.Now().Day())
 
-		comment := Comment{User: user, Content: text, CreateDate: currentTime, VideoId: videoId}
+		comment := dao.Comment{Content: text, CreateDate: currentTime, VideoId: videoId}
 
-		createCommentErr := db.Create(&comment).Error
-		db.Model(&Video{}).
-			Where("id = ?", videoId).
-			UpdateColumn("comment_count", gorm.Expr("comment_count + ?", 1))
+		commentInfo, createCommentErr := commentService.SendComment(comment)
 
 		if createCommentErr != nil {
 			c.JSON(http.StatusOK, Response{
@@ -53,17 +55,12 @@ func CommentAction(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusOK, CommentActionResponse{Response: Response{StatusCode: 0},
-			Comment: Comment{
-				Id:         comment.Id,
-				User:       user,
-				Content:    text,
-				CreateDate: currentTime,
-			}})
+			Comment: commentInfo})
 		return
 	} else if actionType == "2" {
 		commentId := c.Query("comment_id")
-		deleteCommentErr := db.Where("id = ?", commentId).Delete(&Comment{}).Error
-		db.Model(&Video{}).
+		deleteCommentErr := db.Where("id = ?", commentId).Delete(&service.Comment{}).Error
+		db.Model(&service.Video{}).
 			Where("id = ?", videoId).
 			UpdateColumn("comment_count", gorm.Expr("comment_count + ?", -1))
 		if deleteCommentErr != nil {
@@ -83,7 +80,7 @@ func CommentList(c *gin.Context) {
 	token := c.Query("token")
 	videoId := c.Query("video_id")
 
-	var user User
+	var user service.User
 	verifyErr := VerifyToken(token, &user)
 	if verifyErr != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -92,7 +89,7 @@ func CommentList(c *gin.Context) {
 		return
 	}
 
-	var comments []Comment
+	var comments []service.Comment
 	err := db.Where("comments.video_id = ?", videoId).Order("comments.id desc").
 		Find(&comments).Error
 

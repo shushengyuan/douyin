@@ -1,7 +1,7 @@
 package main
 
 import (
-	"simple-demo/controller"
+	"douyin/controller"
 
 	"github.com/gin-gonic/gin"
 )

@@ -2,6 +2,7 @@ package controller
 
 import (
 	// "fmt"
+	"douyin/service"
 	"net/http"
 	"strconv"
 
@@ -10,7 +11,7 @@ import (
 
 type UserListResponse struct {
 	Response
-	UserList []User `json:"user_list"`
+	UserList []service.User `json:"user_list"`
 }
 
 type FriendUser struct {
@@ -31,7 +32,7 @@ type FriendUserListResponse struct {
 // RelationAction no practical effect, just check if token is valid
 func RelationAction(c *gin.Context) {
 	token := c.Query("token")
-	var user User
+	var user service.User
 	verifyErr := VerifyToken(token, &user)
 	if verifyErr != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -44,7 +45,7 @@ func RelationAction(c *gin.Context) {
 		// 对方用户id
 		to_user_id := c.Query("to_user_id")
 
-		var to_user User
+		var to_user service.User
 		to_userExistErr := db.Where("id = ?", to_user_id).Take(&to_user).Error
 		if to_userExistErr != nil {
 			c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
@@ -123,7 +124,7 @@ func RelationAction(c *gin.Context) {
 func FollowList(c *gin.Context) {
 	user_id := c.Query("user_id")
 	// 查找用户
-	var user User
+	var user service.User
 	userExitErr := db.Where("id = ?", user_id).Take(&user).Error
 	if userExitErr != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
@@ -141,7 +142,7 @@ func FollowList(c *gin.Context) {
 		follows = append(follows, relation.Follow)
 	}
 	// 根据id在User数据库查找
-	users := []User{}
+	users := []service.User{}
 	followsFindErr := db.Where("id IN ?", follows).Find(&users).Error
 	if followsFindErr != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Users数据库查询失败"})
@@ -164,7 +165,7 @@ func FollowList(c *gin.Context) {
 func FollowerList(c *gin.Context) {
 	user_id := c.Query("user_id")
 	// 查找用户
-	var user User
+	var user service.User
 	userExitErr := db.Where("id = ?", user_id).Take(&user).Error
 	if userExitErr != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
@@ -182,7 +183,7 @@ func FollowerList(c *gin.Context) {
 		followers = append(followers, relation.Follower)
 	}
 	// 根据id在User数据库查找
-	users := []User{}
+	users := []service.User{}
 	followersFindErr := db.Where("id IN ?", followers).Find(&users).Error
 	if followersFindErr != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Users数据库查询失败"})
@@ -205,7 +206,7 @@ func FollowerList(c *gin.Context) {
 func FriendList(c *gin.Context) {
 	user_id := c.Query("user_id")
 	// 查找用户
-	var user User
+	var user service.User
 	userExitErr := db.Where("id = ?", user_id).Take(&user).Error
 	if userExitErr != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
@@ -243,7 +244,7 @@ func FriendList(c *gin.Context) {
 		}
 	}
 	// 根据id在User数据库查找好友
-	users := []User{}
+	users := []service.User{}
 	friendsFindErr := db.Where("id IN ?", friends).Find(&users).Error
 	if friendsFindErr != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Users数据库查询失败"})
@@ -267,7 +268,7 @@ func FriendList(c *gin.Context) {
 		}
 	}
 	// 查找与好友双方有关的最新消息
-	var message Message
+	var message service.Message
 	friendUsers := []FriendUser{}
 	for i, _ := range users {
 		messageFindErr := db.Where("(to_user_id = ? AND from_user_id = ?) OR (to_user_id = ? AND from_user_id = ?)",

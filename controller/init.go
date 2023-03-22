@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"douyin/service"
 	"fmt"
 
 	"gorm.io/driver/mysql"
@@ -29,12 +30,12 @@ func InitDb() {
 		panic(err)
 	}
 	// Create Table: User
-	err = db.AutoMigrate(&User{})
+	err = db.AutoMigrate(&service.User{})
 	if err != nil {
 		panic(err)
 	}
 
-	err = db.AutoMigrate(&Video{})
+	err = db.AutoMigrate(&service.Video{})
 	if err != nil {
 		panic(err)
 	}
@@ -44,7 +45,7 @@ func InitDb() {
 		panic(err)
 	}
 
-	err = db.AutoMigrate(&Like{})
+	err = db.AutoMigrate(&service.Like{})
 	if err != nil {
 		panic(err)
 	}
@@ -54,17 +55,12 @@ func InitDb() {
 		panic(err)
 	}
 
-	err = db.AutoMigrate(&Message{})
+	err = db.AutoMigrate(&service.Message{})
 	if err != nil {
 		panic(err)
 	}
 
-	err = db.AutoMigrate(&Comment{})
-	if err != nil {
-		panic(err)
-	}
-
-	err = db.AutoMigrate(&CommentForVideo{})
+	err = db.AutoMigrate(&service.Comment{})
 	if err != nil {
 		panic(err)
 	}

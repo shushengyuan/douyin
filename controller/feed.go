@@ -3,6 +3,7 @@ package controller
 import (
 	// "fmt"
 
+	"douyin/service"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -13,8 +14,8 @@ import (
 
 type FeedResponse struct {
 	Response
-	VideoList []Video `json:"video_list,omitempty"`
-	NextTime  int64   `json:"next_time,omitempty"`
+	VideoList []service.Video `json:"video_list,omitempty"`
+	NextTime  int64           `json:"next_time,omitempty"`
 }
 
 // Feed same demo video list for every request
@@ -30,14 +31,14 @@ func Feed(c *gin.Context) {
 
 	fmt.Println(latestTime)
 
-	var user User
+	var user service.User
 	VerifyToken(token, &user)
 
-	var videos []Video
+	var videos []service.Video
 	SearchVideoForFeed(&videos, latestTime)
 	for i, _ := range videos {
 		var count int64
-		db.Model(&Like{}).
+		db.Model(&service.Like{}).
 			Where("user_id = ? AND video_id = ?", user.Id, videos[i].Id).
 			Count(&count)
 		if count > 0 {

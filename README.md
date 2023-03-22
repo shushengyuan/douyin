@@ -8,6 +8,6 @@
 需要依赖ffmpeg，并且使用管理员权限直接编译运行即可
 
 ```shell
-go build && ./simple-demo
+go build && ./douyin
 ```
 

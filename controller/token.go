@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"douyin/service"
 	"errors"
 	"fmt"
 	"time"
@@ -23,7 +24,7 @@ func GenerateToken(userName string) (string, error) {
 	return tokenString, nil
 }
 
-func VerifyToken(tokenString string, user *User) error {
+func VerifyToken(tokenString string, user *service.User) error {
 	// 验证 Token
 	parsedToken, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// 验证签名

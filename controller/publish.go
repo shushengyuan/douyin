@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bytes"
+	"douyin/service"
 	"fmt"
 	"net/http"
 	"os"
@@ -17,14 +18,14 @@ import (
 
 type VideoListResponse struct {
 	Response
-	VideoList []Video `json:"video_list"`
+	VideoList []service.Video `json:"video_list"`
 }
 
 // Publish check token then save upload file to public directory
 func Publish(c *gin.Context) {
 	token := c.PostForm("token")
 
-	var user User
+	var user service.User
 	verifyErr := VerifyToken(token, &user)
 	if verifyErr != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -94,7 +95,7 @@ func Publish(c *gin.Context) {
 	}
 	tx := db.Begin()
 	//在Videos数据库中插入数据
-	if err := tx.Create(&Video{AuthorID: user.Id, PlayUrl: videoName, CoverUrl: videoName[:len(videoName)-3] + "png", PublishTime: time.Now().Unix()}).
+	if err := tx.Create(&service.Video{AuthorID: user.Id, PlayUrl: videoName, CoverUrl: videoName[:len(videoName)-3] + "png", PublishTime: time.Now().Unix()}).
 		Error; err != nil {
 		c.JSON(http.StatusOK, Response{
 			StatusCode: 1,
@@ -103,7 +104,7 @@ func Publish(c *gin.Context) {
 		return
 	}
 
-	if err := tx.Model(&User{}).
+	if err := tx.Model(service.User{}).
 		Where("id = ?", user.Id).
 		UpdateColumn("work_count", gorm.Expr("work_count + ?", 1)).
 		Error; err != nil {
@@ -134,7 +135,7 @@ func PublishList(c *gin.Context) {
 	}
 
 	token := c.Query("token")
-	var user User
+	var user service.User
 	verifyErr := VerifyToken(token, &user)
 	if verifyErr != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -143,7 +144,7 @@ func PublishList(c *gin.Context) {
 		return
 	}
 
-	var videos []Video
+	var videos []service.Video
 	SearchVideoForPublishList(user_id, &videos)
 	c.JSON(http.StatusOK, VideoListResponse{
 		Response: Response{

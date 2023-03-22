@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"douyin/service"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -14,7 +15,7 @@ func FavoriteAction(c *gin.Context) {
 	token := c.Query("token")
 	actionType := c.Query("action_type")
 
-	var user User
+	var user service.User
 	verifyErr := VerifyToken(token, &user)
 	if verifyErr != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -31,12 +32,12 @@ func FavoriteAction(c *gin.Context) {
 		return
 	}
 
-	var video Video
+	var video service.Video
 	var num int32
 	tx := db.Begin()
 	if actionType == "1" {
 		num = 1
-		likes := Like{uint(user.Id), uint(video_id)}
+		likes := service.Like{uint(user.Id), uint(video_id)}
 		if err := tx.Create(likes).Error; err != nil {
 			fmt.Println(err)
 			tx.Rollback()
@@ -44,7 +45,7 @@ func FavoriteAction(c *gin.Context) {
 		}
 	} else if actionType == "2" {
 		num = -1
-		if err := tx.Where("user_id = ?", uint(user.Id)).Delete(&Like{}).Error; err != nil {
+		if err := tx.Where("user_id = ?", uint(user.Id)).Delete(&service.Like{}).Error; err != nil {
 			fmt.Println(err)
 			tx.Rollback()
 			return
@@ -64,7 +65,7 @@ func FavoriteAction(c *gin.Context) {
 		fmt.Println(err)
 		return
 	}
-	if err := tx.Model(&User{}).
+	if err := tx.Model(&service.User{}).
 		Where("id = ?", video.AuthorID).
 		UpdateColumn("total_favorited", gorm.Expr("total_favorited + ?", num)).
 		Error; err != nil {
@@ -72,7 +73,7 @@ func FavoriteAction(c *gin.Context) {
 		tx.Rollback()
 		return
 	}
-	if err := tx.Model(&User{}).
+	if err := tx.Model(&service.User{}).
 		Where("id = ?", user.Id).
 		UpdateColumn("favorite_count", gorm.Expr("favorite_count + ?", num)).
 		Error; err != nil {
@@ -97,7 +98,7 @@ func FavoriteList(c *gin.Context) {
 	token := c.Query("token")
 	userID := c.Query("user_id")
 
-	var user User
+	var user service.User
 	verifyErr := VerifyToken(token, &user)
 	if verifyErr != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -106,7 +107,7 @@ func FavoriteList(c *gin.Context) {
 		return
 	}
 
-	var videos []Video
+	var videos []service.Video
 	VideoForFavorite(userID, &videos)
 	fmt.Println(videos)
 	c.JSON(http.StatusOK, VideoListResponse{

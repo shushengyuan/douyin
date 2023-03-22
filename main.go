@@ -1,14 +1,13 @@
 package main
 
 import (
-	"simple-demo/controller"
-	"simple-demo/service"
+	"douyin/controller"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	go service.RunMessageServer()
+	go controller.RunMessageServer()
 	controller.InitDb()
 	r := gin.Default()
 

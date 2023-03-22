@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"douyin/service"
 	"fmt"
 	"net/http"
 
@@ -14,7 +15,7 @@ import (
 // test data: username=zhanglei, password=douyin
 
 // 原始用户登录map
-var usersLoginInfo = map[string]User{
+var usersLoginInfo = map[string]service.User{
 	"zhangleidouyin": {
 		Id:            1,
 		Name:          "zhanglei",
@@ -34,7 +35,7 @@ type UserLoginResponse struct {
 
 type UserResponse struct {
 	Response
-	User User `json:"user"`
+	User service.User `json:"user"`
 }
 
 func Register(c *gin.Context) {
@@ -60,7 +61,7 @@ func Register(c *gin.Context) {
 	} else {
 		tx := db.Begin()
 
-		if err := tx.Create(&User{Name: username}).Error; err != nil {
+		if err := tx.Create(&service.User{Name: username}).Error; err != nil {
 			tx.Rollback()
 			c.JSON(http.StatusOK, UserLoginResponse{
 				Response: Response{StatusCode: 1, StatusMsg: "Error creating User"},
@@ -121,7 +122,7 @@ func Login(c *gin.Context) {
 func UserInfo(c *gin.Context) {
 	token := c.Query("token")
 
-	var user User
+	var user service.User
 	verifyErr := VerifyToken(token, &user)
 	if verifyErr != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
