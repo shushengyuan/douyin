@@ -45,7 +45,7 @@ func VerifyToken(tokenString string, user *dao.User) error {
 		}
 		// 获取自定义信息
 		userName := claims["username"].(string)
-		userExitErr := db.Where("name = ?", userName).Take(&user).Error
+		userExitErr := dao.GetDB().Where("name = ?", userName).Take(&user).Error
 		return userExitErr
 	} else {
 		return errors.New("invalid: token is invalid")

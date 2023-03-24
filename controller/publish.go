@@ -94,7 +94,7 @@ func Publish(c *gin.Context) {
 		})
 		return
 	}
-	tx := db.Begin()
+	tx := dao.GetDB().Begin()
 	//在Videos数据库中插入数据
 	if err := tx.Create(&service.Video{AuthorID: user.Id, PlayUrl: videoName, CoverUrl: videoName[:len(videoName)-3] + "png", PublishTime: time.Now().Unix()}).
 		Error; err != nil {

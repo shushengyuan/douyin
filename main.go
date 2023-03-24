@@ -10,7 +10,6 @@ import (
 func main() {
 	go controller.RunMessageServer()
 	dao.InitDb()
-	controller.InitDb()
 	r := gin.Default()
 
 	initRouter(r)

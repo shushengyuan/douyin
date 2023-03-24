@@ -39,7 +39,7 @@ func Feed(c *gin.Context) {
 	SearchVideoForFeed(&videos, latestTime)
 	for i, _ := range videos {
 		var count int64
-		db.Model(&service.Like{}).
+		dao.GetDB().Model(&service.Like{}).
 			Where("user_id = ? AND video_id = ?", user.Id, videos[i].Id).
 			Count(&count)
 		if count > 0 {

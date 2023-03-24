@@ -47,7 +47,7 @@ func RelationAction(c *gin.Context) {
 		to_user_id := c.Query("to_user_id")
 
 		var to_user service.User
-		to_userExistErr := db.Where("id = ?", to_user_id).Take(&to_user).Error
+		to_userExistErr := dao.GetDB().Where("id = ?", to_user_id).Take(&to_user).Error
 		if to_userExistErr != nil {
 			c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 			return
@@ -62,28 +62,28 @@ func RelationAction(c *gin.Context) {
 				return
 			}
 			// 注意不能重复关注
-			var relation Relation
-			relationTakeErr := db.Where("follow = ? AND follower = ?", to_user.Id, user.Id).Take(&relation).Error
+			var relation dao.Relation
+			relationTakeErr := dao.GetDB().Where("follow = ? AND follower = ?", to_user.Id, user.Id).Take(&relation).Error
 			if relationTakeErr == nil {
 				c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "您不能重复关注该用户"})
 				return
 			}
 
-			CreateFollowErr := db.Create(&Relation{Follow: to_user.Id, Follower: user.Id}).Error
+			CreateFollowErr := dao.GetDB().Create(&dao.Relation{Follow: to_user.Id, Follower: user.Id}).Error
 			if CreateFollowErr != nil {
 				c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Relations数据库插入失败"})
 				return
 			}
 
 			user.FollowCount += 1
-			userSaveErr := db.Save(&user).Error
+			userSaveErr := dao.GetDB().Save(&user).Error
 			if userSaveErr != nil {
 				c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Users数据库更新失败"})
 				return
 			}
 
 			to_user.FollowerCount += 1
-			to_userSaveErr := db.Save(&to_user).Error
+			to_userSaveErr := dao.GetDB().Save(&to_user).Error
 			if to_userSaveErr != nil {
 				c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Users数据库更新失败"})
 				return
@@ -91,7 +91,7 @@ func RelationAction(c *gin.Context) {
 
 		} else if action_type == "2" {
 			// 取关操作
-			DeleteFollowErr := db.Where("follow = ? AND follower = ?", to_user.Id, user.Id).Delete(&Relation{}).Error
+			DeleteFollowErr := dao.GetDB().Where("follow = ? AND follower = ?", to_user.Id, user.Id).Delete(&dao.Relation{}).Error
 			if DeleteFollowErr != nil {
 				c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Relations数据库删除失败"})
 				return
@@ -100,7 +100,7 @@ func RelationAction(c *gin.Context) {
 			if user.FollowCount > 0 {
 				user.FollowCount -= 1
 			}
-			userSaveErr := db.Save(&user).Error
+			userSaveErr := dao.GetDB().Save(&user).Error
 			if userSaveErr != nil {
 				c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Users数据库更新失败"})
 				return
@@ -109,7 +109,7 @@ func RelationAction(c *gin.Context) {
 			if to_user.FollowerCount > 0 {
 				to_user.FollowerCount -= 1
 			}
-			to_userSaveErr := db.Save(&to_user).Error
+			to_userSaveErr := dao.GetDB().Save(&to_user).Error
 			if to_userSaveErr != nil {
 				c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Users数据库更新失败"})
 				return
@@ -126,14 +126,14 @@ func FollowList(c *gin.Context) {
 	user_id := c.Query("user_id")
 	// 查找用户
 	var user service.User
-	userExitErr := db.Where("id = ?", user_id).Take(&user).Error
+	userExitErr := dao.GetDB().Where("id = ?", user_id).Take(&user).Error
 	if userExitErr != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 		return
 	}
 	// 在Relation数据查找关注者的id
-	relations := []Relation{}
-	relationsFinderr := db.Where("follower = ?", user_id).Find(&relations).Error
+	relations := []dao.Relation{}
+	relationsFinderr := dao.GetDB().Where("follower = ?", user_id).Find(&relations).Error
 	if relationsFinderr != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Relations数据库查询失败"})
 		return
@@ -144,7 +144,7 @@ func FollowList(c *gin.Context) {
 	}
 	// 根据id在User数据库查找
 	users := []service.User{}
-	followsFindErr := db.Where("id IN ?", follows).Find(&users).Error
+	followsFindErr := dao.GetDB().Where("id IN ?", follows).Find(&users).Error
 	if followsFindErr != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Users数据库查询失败"})
 		return
@@ -167,14 +167,14 @@ func FollowerList(c *gin.Context) {
 	user_id := c.Query("user_id")
 	// 查找用户
 	var user service.User
-	userExitErr := db.Where("id = ?", user_id).Take(&user).Error
+	userExitErr := dao.GetDB().Where("id = ?", user_id).Take(&user).Error
 	if userExitErr != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 		return
 	}
 	// 在Relation数据查找粉丝的id
-	relations := []Relation{}
-	relationsFinderr := db.Where("follow = ?", user_id).Find(&relations).Error
+	relations := []dao.Relation{}
+	relationsFinderr := dao.GetDB().Where("follow = ?", user_id).Find(&relations).Error
 	if relationsFinderr != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Relations数据库查询失败"})
 		return
@@ -185,7 +185,7 @@ func FollowerList(c *gin.Context) {
 	}
 	// 根据id在User数据库查找
 	users := []service.User{}
-	followersFindErr := db.Where("id IN ?", followers).Find(&users).Error
+	followersFindErr := dao.GetDB().Where("id IN ?", followers).Find(&users).Error
 	if followersFindErr != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Users数据库查询失败"})
 		return
@@ -208,14 +208,14 @@ func FriendList(c *gin.Context) {
 	user_id := c.Query("user_id")
 	// 查找用户
 	var user service.User
-	userExitErr := db.Where("id = ?", user_id).Take(&user).Error
+	userExitErr := dao.GetDB().Where("id = ?", user_id).Take(&user).Error
 	if userExitErr != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
 		return
 	}
 	// 在Relation数据查找和用户相关的记录（只查找一次）
-	relations := []Relation{}
-	relationsFinderr := db.Where("follow = ? OR follower = ?", user_id, user_id).Find(&relations).Error
+	relations := []dao.Relation{}
+	relationsFinderr := dao.GetDB().Where("follow = ? OR follower = ?", user_id, user_id).Find(&relations).Error
 	if relationsFinderr != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Relations数据库查询失败"})
 		return
@@ -246,14 +246,14 @@ func FriendList(c *gin.Context) {
 	}
 	// 根据id在User数据库查找好友
 	users := []service.User{}
-	friendsFindErr := db.Where("id IN ?", friends).Find(&users).Error
+	friendsFindErr := dao.GetDB().Where("id IN ?", friends).Find(&users).Error
 	if friendsFindErr != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Users数据库查询失败"})
 		return
 	}
 	// 将Relation数据库中用户为followers的MessageId字段全置为-1
-	setRelations := []Relation{}
-	setRelationsFindErr := db.Where("follower = ?", user_id).Find(&setRelations).Error
+	setRelations := []dao.Relation{}
+	setRelationsFindErr := dao.GetDB().Where("follower = ?", user_id).Find(&setRelations).Error
 	if setRelationsFindErr != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Relations数据库查询失败"})
 		return
@@ -262,7 +262,7 @@ func FriendList(c *gin.Context) {
 		for i, _ := range setRelations {
 			setRelations[i].MessageId = -1
 		}
-		setRelationsSaveErr := db.Save(&setRelations).Error
+		setRelationsSaveErr := dao.GetDB().Save(&setRelations).Error
 		if setRelationsSaveErr != nil {
 			c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Relations数据库更新失败"})
 			return
@@ -272,7 +272,7 @@ func FriendList(c *gin.Context) {
 	var message service.Message
 	friendUsers := []FriendUser{}
 	for i, _ := range users {
-		messageFindErr := db.Where("(to_user_id = ? AND from_user_id = ?) OR (to_user_id = ? AND from_user_id = ?)",
+		messageFindErr := dao.GetDB().Where("(to_user_id = ? AND from_user_id = ?) OR (to_user_id = ? AND from_user_id = ?)",
 			userIdInt, users[i].Id, users[i].Id, userIdInt).Last(&message).Error // 暂时按照主键降序查找
 		if messageFindErr == nil {
 			msgType := 0

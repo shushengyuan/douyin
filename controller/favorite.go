@@ -35,7 +35,7 @@ func FavoriteAction(c *gin.Context) {
 
 	var video service.Video
 	var num int32
-	tx := db.Begin()
+	tx := dao.GetDB().Begin()
 	if actionType == "1" {
 		num = 1
 		likes := service.Like{uint(user.Id), uint(video_id)}

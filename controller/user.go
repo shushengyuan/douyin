@@ -51,8 +51,8 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	var account Account
-	accountExistErr := db.Where("name = ?", username).Take(&account).Error
+	var account dao.Account
+	accountExistErr := dao.GetDB().Where("name = ?", username).Take(&account).Error
 
 	if accountExistErr == nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -60,7 +60,7 @@ func Register(c *gin.Context) {
 		})
 		return
 	} else {
-		tx := db.Begin()
+		tx := dao.GetDB().Begin()
 
 		if err := tx.Create(&service.User{Name: username}).Error; err != nil {
 			tx.Rollback()
@@ -69,7 +69,7 @@ func Register(c *gin.Context) {
 			})
 			return
 		}
-		if err := tx.Create(&Account{Name: username, Password: password}).Error; err != nil {
+		if err := tx.Create(&dao.Account{Name: username, Password: password}).Error; err != nil {
 			tx.Rollback()
 			c.JSON(http.StatusOK, UserLoginResponse{
 				Response: Response{StatusCode: 1, StatusMsg: "Error creating count"},
@@ -105,8 +105,8 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	var account Account
-	accountExitErr := db.Where("name = ? AND password = ?", username, password).Take(&account).Error
+	var account dao.Account
+	accountExitErr := dao.GetDB().Where("name = ? AND password = ?", username, password).Take(&account).Error
 	if accountExitErr == nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 0},

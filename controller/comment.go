@@ -58,8 +58,8 @@ func CommentAction(c *gin.Context) {
 		return
 	} else if actionType == "2" {
 		commentId := c.Query("comment_id")
-		deleteCommentErr := db.Where("id = ?", commentId).Delete(&service.Comment{}).Error
-		db.Model(&service.Video{}).
+		deleteCommentErr := dao.GetDB().Where("id = ?", commentId).Delete(&service.Comment{}).Error
+		dao.GetDB().Model(&service.Video{}).
 			Where("id = ?", videoId).
 			UpdateColumn("comment_count", gorm.Expr("comment_count + ?", -1))
 		if deleteCommentErr != nil {
@@ -89,7 +89,7 @@ func CommentList(c *gin.Context) {
 	}
 
 	var comments []service.Comment
-	err := db.Where("comments.video_id = ?", videoId).Order("comments.id desc").
+	err := dao.GetDB().Where("comments.video_id = ?", videoId).Order("comments.id desc").
 		Find(&comments).Error
 
 	if err != nil {

@@ -36,27 +36,27 @@ func InitDb() {
 		panic(err)
 	}
 
-	// err = db.AutoMigrate(&service.Video{})
-	// if err != nil {
-	// 	panic(err)
-	// }
+	err = db.AutoMigrate(&Video{})
+	if err != nil {
+		panic(err)
+	}
 
-	// err = db.AutoMigrate(&Account{})
-	// if err != nil {
-	// 	panic(err)
-	// }
+	err = db.AutoMigrate(&Account{})
+	if err != nil {
+		panic(err)
+	}
 
-	// err = db.AutoMigrate(&service.Like{})
-	// if err != nil {
-	// 	panic(err)
-	// }
+	err = db.AutoMigrate(&Like{})
+	if err != nil {
+		panic(err)
+	}
 
-	// err = db.AutoMigrate(&Relation{})
-	// if err != nil {
-	// 	panic(err)
-	// }
+	err = db.AutoMigrate(&Relation{})
+	if err != nil {
+		panic(err)
+	}
 
-	// err = db.AutoMigrate(&service.Message{})
+	// err = db.AutoMigrate(&Message{})
 	// if err != nil {
 	// 	panic(err)
 	// }

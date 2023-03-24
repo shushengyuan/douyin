@@ -48,9 +48,9 @@ func MessageAction(c *gin.Context) {
 	}
 	// 查找对方用户
 	var toUser service.User
-	toUserExitErr := db.Where("id = ?", toUserIdInt).Take(&toUser).Error
+	toUserExitErr := dao.GetDB().Where("id = ?", toUserIdInt).Take(&toUser).Error
 	if toUserExitErr == nil {
-		CreateMessageErr := db.Create(&service.Message{ToUserId: toUserIdInt, FromUserId: user.Id, Content: content}).Error
+		CreateMessageErr := dao.GetDB().Create(&service.Message{ToUserId: toUserIdInt, FromUserId: user.Id, Content: content}).Error
 		if CreateMessageErr != nil {
 			c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "发送消息失败！"})
 		} else {
@@ -83,11 +83,11 @@ func MessageChat(c *gin.Context) {
 	}
 	// 查找对方用户
 	var toUser service.User
-	toUserExitErr := db.Where("id = ?", toUserIdInt).Take(&toUser).Error
+	toUserExitErr := dao.GetDB().Where("id = ?", toUserIdInt).Take(&toUser).Error
 	if toUserExitErr == nil {
 		// 查找relation数据库中用户与对方对应的MessageId
-		var relation Relation
-		relationFindErr := db.Where("follower = ? AND follow = ?", user.Id, toUserIdInt).Take(&relation).Error
+		var relation dao.Relation
+		relationFindErr := dao.GetDB().Where("follower = ? AND follow = ?", user.Id, toUserIdInt).Take(&relation).Error
 		if relationFindErr != nil {
 			c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "查找relations数据库失败"})
 			return
@@ -95,7 +95,7 @@ func MessageChat(c *gin.Context) {
 		// -1表明对话刚刚开始，查找与双方有关的所有消息
 		messages := []service.Message{}
 		if relation.MessageId == -1 {
-			messagesFindErr := db.Where("(to_user_id = ? AND from_user_id = ?) OR (to_user_id = ? AND from_user_id = ?)",
+			messagesFindErr := dao.GetDB().Where("(to_user_id = ? AND from_user_id = ?) OR (to_user_id = ? AND from_user_id = ?)",
 				toUserIdInt, user.Id, user.Id, toUserIdInt).Order("Id").Find(&messages).Error // 暂时按照主键顺序查找
 			if messagesFindErr != nil {
 				c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "查找messages数据库失败"})
@@ -103,7 +103,7 @@ func MessageChat(c *gin.Context) {
 			}
 
 		} else { // 对话正在进行，只返回对方发来的最新消息
-			messagesFindErr := db.Where("to_user_id = ? AND from_user_id = ? AND Id > ?",
+			messagesFindErr := dao.GetDB().Where("to_user_id = ? AND from_user_id = ? AND Id > ?",
 				user.Id, toUserIdInt, relation.Id).Order("Id").Find(&messages).Error // 暂时按照主键降序查找
 			if messagesFindErr != nil {
 				c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "查找messages数据库失败"})
@@ -114,7 +114,7 @@ func MessageChat(c *gin.Context) {
 		// 若有新消息，则更新MessageId
 		if len(messages) > 0 {
 			relation.MessageId = messages[len(messages)-1].Id
-			relationSaveErr := db.Save(&relation).Error
+			relationSaveErr := dao.GetDB().Save(&relation).Error
 			if relationSaveErr != nil {
 				c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Relations数据库更新失败"})
 				return
