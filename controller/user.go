@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"douyin/dao"
 	"douyin/service"
 	"fmt"
 	"net/http"
@@ -35,7 +36,7 @@ type UserLoginResponse struct {
 
 type UserResponse struct {
 	Response
-	User service.User `json:"user"`
+	User dao.User `json:"user"`
 }
 
 func Register(c *gin.Context) {
@@ -122,7 +123,7 @@ func Login(c *gin.Context) {
 func UserInfo(c *gin.Context) {
 	token := c.Query("token")
 
-	var user service.User
+	var user dao.User
 	verifyErr := VerifyToken(token, &user)
 	if verifyErr != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{

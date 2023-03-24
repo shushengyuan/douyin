@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"douyin/dao"
 	"douyin/service"
 	"fmt"
 	"net/http"
@@ -15,7 +16,7 @@ func FavoriteAction(c *gin.Context) {
 	token := c.Query("token")
 	actionType := c.Query("action_type")
 
-	var user service.User
+	var user dao.User
 	verifyErr := VerifyToken(token, &user)
 	if verifyErr != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -98,7 +99,7 @@ func FavoriteList(c *gin.Context) {
 	token := c.Query("token")
 	userID := c.Query("user_id")
 
-	var user service.User
+	var user dao.User
 	verifyErr := VerifyToken(token, &user)
 	if verifyErr != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{

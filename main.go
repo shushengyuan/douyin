@@ -2,12 +2,14 @@ package main
 
 import (
 	"douyin/controller"
+	"douyin/dao"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	go controller.RunMessageServer()
+	dao.InitDb()
 	controller.InitDb()
 	r := gin.Default()
 

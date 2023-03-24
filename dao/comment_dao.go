@@ -6,6 +6,7 @@ import (
 
 type Comment struct {
 	Id         int64 `json:"id,omitempty" gorm:"primary_key;"`
+	User       User  `json:"user" gorm:"foreignKey:Id;references:UserID;"`
 	UserID     int64
 	Content    string `json:"content,omitempty"`
 	CreateDate string `json:"create_date,omitempty"`
@@ -16,9 +17,9 @@ type Comment struct {
 // 2、发表评论
 func InsertComment(comment Comment) (Comment, error) {
 	createCommentErr := db.Create(&comment).Error
-	db.Model(&Video{}).
-		Where("id = ?", comment.VideoId).
-		UpdateColumn("comment_count", gorm.Expr("comment_count + ?", 1))
+	// db.Model(&Video{}).
+	// 	Where("id = ?", comment.VideoId).
+	// 	UpdateColumn("comment_count", gorm.Expr("comment_count + ?", 1))
 
 	return comment, createCommentErr
 }

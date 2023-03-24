@@ -7,14 +7,10 @@ import (
 type CommentsServiceImpl struct {
 }
 
-func (c CommentsServiceImpl) SendComment(comment dao.Comment) (Comment, error) {
+func (c CommentsServiceImpl) SendComment(comment dao.Comment) (dao.Comment, error) {
 	commentDao, err := dao.InsertComment(comment)
-	var commentInfo Comment
-	commentInfo.Id = commentDao.Id
-	commentInfo.UserID = commentDao.UserID
-	commentInfo.VideoId = commentDao.VideoId
-	commentInfo.Content = commentDao.Content
-	return commentInfo, err
+
+	return commentDao, err
 
 }
 

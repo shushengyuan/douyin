@@ -20,13 +20,13 @@ type CommentListResponse struct {
 
 type CommentActionResponse struct {
 	Response
-	Comment service.Comment `json:"comment,omitempty"`
+	Comment dao.Comment `json:"comment,omitempty"`
 }
 
 // CommentAction no practical effect, just check if token is valid
 func CommentAction(c *gin.Context) {
 	token := c.Query("token")
-	var user service.User
+	var user dao.User
 	verifyErr := VerifyToken(token, &user)
 	if verifyErr != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -43,8 +43,7 @@ func CommentAction(c *gin.Context) {
 		text := c.Query("comment_text")
 		currentTime := fmt.Sprintf("%d-%d", time.Now().Month(), time.Now().Day())
 
-		comment := dao.Comment{Content: text, CreateDate: currentTime, VideoId: videoId}
-
+		comment := dao.Comment{User: user, Content: text, CreateDate: currentTime, VideoId: videoId}
 		commentInfo, createCommentErr := commentService.SendComment(comment)
 
 		if createCommentErr != nil {
@@ -80,11 +79,11 @@ func CommentList(c *gin.Context) {
 	token := c.Query("token")
 	videoId := c.Query("video_id")
 
-	var user service.User
+	var user dao.User
 	verifyErr := VerifyToken(token, &user)
 	if verifyErr != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "tokenis invalid"},
+			Response: Response{StatusCode: 1, StatusMsg: verifyErr.Error()},
 		})
 		return
 	}

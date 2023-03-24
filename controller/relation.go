@@ -2,6 +2,7 @@ package controller
 
 import (
 	// "fmt"
+	"douyin/dao"
 	"douyin/service"
 	"net/http"
 	"strconv"
@@ -32,7 +33,7 @@ type FriendUserListResponse struct {
 // RelationAction no practical effect, just check if token is valid
 func RelationAction(c *gin.Context) {
 	token := c.Query("token")
-	var user service.User
+	var user dao.User
 	verifyErr := VerifyToken(token, &user)
 	if verifyErr != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{

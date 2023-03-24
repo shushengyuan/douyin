@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bytes"
+	"douyin/dao"
 	"douyin/service"
 	"fmt"
 	"net/http"
@@ -25,7 +26,7 @@ type VideoListResponse struct {
 func Publish(c *gin.Context) {
 	token := c.PostForm("token")
 
-	var user service.User
+	var user dao.User
 	verifyErr := VerifyToken(token, &user)
 	if verifyErr != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -135,7 +136,7 @@ func PublishList(c *gin.Context) {
 	}
 
 	token := c.Query("token")
-	var user service.User
+	var user dao.User
 	verifyErr := VerifyToken(token, &user)
 	if verifyErr != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{

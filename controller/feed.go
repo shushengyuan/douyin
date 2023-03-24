@@ -3,6 +3,7 @@ package controller
 import (
 	// "fmt"
 
+	"douyin/dao"
 	"douyin/service"
 	"fmt"
 	"net/http"
@@ -31,7 +32,7 @@ func Feed(c *gin.Context) {
 
 	fmt.Println(latestTime)
 
-	var user service.User
+	var user dao.User
 	VerifyToken(token, &user)
 
 	var videos []service.Video

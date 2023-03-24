@@ -31,10 +31,10 @@ func InitDb() {
 		panic(err)
 	}
 	// Create Table: User
-	// err = db.AutoMigrate(&service.User{})
-	// if err != nil {
-	// 	panic(err)
-	// }
+	err = db.AutoMigrate(&User{})
+	if err != nil {
+		panic(err)
+	}
 
 	// err = db.AutoMigrate(&service.Video{})
 	// if err != nil {
@@ -61,10 +61,10 @@ func InitDb() {
 	// 	panic(err)
 	// }
 
-	// err = db.AutoMigrate(&service.Comment{})
-	// if err != nil {
-	// 	panic(err)
-	// }
+	err = db.AutoMigrate(&Comment{})
+	if err != nil {
+		panic(err)
+	}
 
 	sqlDB, _ := db.DB()
 
